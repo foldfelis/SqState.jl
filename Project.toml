@@ -16,6 +16,7 @@ Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
 
 [compat]
 BenchmarkTools = "0.7"
+Colors = "0.12"
 DataDeps = "0.7"
 HDF5 = "0.15"
 Plots = "1.14"
