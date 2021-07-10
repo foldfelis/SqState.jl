@@ -149,7 +149,11 @@ function training_process(;
             x->x/length(test_data_loader),
             out_losses[(end-length(loader)+1):end]
         )
-        @info "$t\n# learning rate: $(opt.eta)\n# in data loss:  $in_loss\n# out data loss: $out_loss\n#"
+        out_loss_mse = sum(
+            x->x/length(test_data_loader),
+            out_losses_mse[(end-length(loader)+1):end]
+        )
+        @info "$t\n# learning rate: $(opt.eta)\n# in data loss:  $in_loss\n# out data loss: $out_loss\n# mse out loss:  $(out_loss_mse)"
     end
 
     return model, in_losses, out_losses, in_losses_mse, out_losses_mse
