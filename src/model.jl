@@ -143,7 +143,7 @@ function training_process(;
             x->x/length(test_data_loader),
             out_losses[(end-length(loader)+1):end]
         )
-        @info "# $t\n# in data loss: $in_loss\n# out data loss: $out_loss\n#"
+        @info "# $t\n# in data loss:  $in_loss\n# out data loss: $out_loss\n#"
 
         (t ≥ 15) && (t % 5 == 0) && (opt.eta /= 2)
     end
