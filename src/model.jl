@@ -94,7 +94,8 @@ function training_process(;
 
     # prepare model
     m = is_gpu ? model() |> gpu : model()
-    loss(x, y) = Flux.mse(m(x), y)
+    loss(x, y) = Flux.Losses.crossentropy(m(x).^2, y.^2)
+    loss_mse(x, y) = Flux.mse(m(x), y)
     ps = Flux.params(m)
     opt = ADAM(1e-2, (0.7, 0.9))
 
@@ -122,17 +123,22 @@ function training_process(;
 
     # training
     in_losses = Float32[]
+    in_losses_mse = Float32[]
     out_losses = Float32[]
+    out_losses_mse = Float32[]
     for (t, loader) in enumerate(data_loaders)
         @time for (b, (x, y)) in enumerate(loader)
             x = is_gpu ? x |> gpu : x
             y = is_gpu ? y |> gpu : y
 
+            opt.eta = 1e-2 / 2^((length(loader)*(t-1)+b)/20)
             gs = Flux.gradient(() -> loss(x, y), ps)
             Flux.update!(opt, ps, gs)
 
             push!(in_losses, loss(x, y))
             push!(out_losses, validation(test_data_loader, loss, is_gpu))
+            push!(in_losses_mse, loss_mse(x, y))
+            push!(out_losses_mse, validation(test_data_loader, loss_mse, is_gpu))
         end
 
         in_loss = sum(
@@ -144,11 +150,9 @@ function training_process(;
             out_losses[(end-length(loader)+1):end]
         )
         @info "$t\n# learning rate: $(opt.eta)\n# in data loss:  $in_loss\n# out data loss: $out_loss\n#"
-
-        (t ≥ 15) && (t % 5 == 0) && (opt.eta > 2e-5) && (opt.eta /= 2)
     end
 
-    return model, in_losses, out_losses
+    return model, in_losses, out_losses, in_losses_mse, out_losses_mse
 end
 
 function validation(test_data_loader::DataLoader, loss_func, is_gpu)
