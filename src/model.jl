@@ -131,7 +131,7 @@ function training_process(;
             x = is_gpu ? x |> gpu : x
             y = is_gpu ? y |> gpu : y
 
-            opt.eta = 1e-2 / 2^((length(loader)*(t-1)+b)/(2*length(loader))
+            opt.eta = 1e-2 / 2^((length(loader)*(t-1)+b)/(2*length(loader)))
             gs = Flux.gradient(() -> loss(x, y), ps)
             Flux.update!(opt, ps, gs)
 
