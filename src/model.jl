@@ -145,7 +145,7 @@ function training_process(;
         )
         @info "$t\n# learning rate: $(opt.eta)\n# in data loss:  $in_loss\n# out data loss: $out_loss\n#"
 
-        (t ≥ 15) && (t % 5 == 0) && (opt.eta /= 2)
+        (t ≥ 15) && (t % 5 == 0) && (opt.eta > 2e-7) && (opt.eta /= 2)
     end
 
     return model, in_losses, out_losses
