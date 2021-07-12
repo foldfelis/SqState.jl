@@ -95,15 +95,16 @@ function training_process(model_name;
 
     # prepare model
     m = is_gpu ? model() |> gpu : model()
-    loss(x, y) = Flux.huber_loss(m(x), y)
+    floatmin_ones = cu(ones(70*70, batch_size) * floatmin())
+    loss(x, y) = Flux.crossentropy((m(x)+floatmin_ones).^2, (y+floatmin_ones).^2)
     loss_mse(x, y) = Flux.mse(m(x), y)
     ps = Flux.params(m)
-    opt = ADAM(1e-2, (0.7, 0.9))
+    opt = ADAM(1e-3, (0.7, 0.9))
 
     # jit model
     @time begin
         @info "jit..."
-        x, y = first(preprocess(file_names[2], batch_size=1))
+        x, y = first(preprocess(file_names[2], batch_size=batch_size))
         x = is_gpu ? x |> gpu : x
         y = is_gpu ? y |> gpu : y
         gs = Flux.gradient(() -> loss(x, y), ps)
@@ -132,7 +133,7 @@ function training_process(model_name;
             x = is_gpu ? x |> gpu : x
             y = is_gpu ? y |> gpu : y
 
-            (t ≥ 15) && (opt.eta = 1e-2 / 2^((length(loader)*(t-15)+b)/(2*length(loader))))
+            (t ≥ 15) && (opt.eta = 1e-3 / 2^((length(loader)*(t-15)+b)/(2*length(loader))))
             gs = Flux.gradient(() -> loss(x, y), ps)
             Flux.update!(opt, ps, gs)
 
